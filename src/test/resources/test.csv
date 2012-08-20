@@ -1,0 +1,7 @@
+!,this,is,a,comment
+!this,is,also,a,comment
+#,this,is,a,header
+,this,is,a,summary,data,line
+#,this,header,!has,comments
+%,this,is,a,series,header
+,this,is,a,series,data,line

@@ -1,0 +1,4 @@
+!this,row,is,commented,out
+#meta,exname,!ignore,fldrs,wst_id
+!the,ignore,field,is,ignored all the way down the list
+,Simple,1.0,2.0,abc123

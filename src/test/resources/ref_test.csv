@@ -1,0 +1,11 @@
+!column, is, not, working
+#meta,exname,!ignore,fldrs,wst_id
+a,Simple,1.0,2.0,abc123
+,Harder,1.0,3.0,123abc
+%,tmin,tmax
+a,3.4,30
+a,3.6,28
+a,3.2,30
+,1.2,18
+,2.3,20
+a,3.3,28.1
