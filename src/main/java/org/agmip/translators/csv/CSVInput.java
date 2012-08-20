@@ -75,8 +75,9 @@ import org.agmip.util.acepathfinder.AcePathfinderUtil.PathType;
 
 public class CSVInput implements TranslatorInput {
     private static Logger LOG = LoggerFactory.getLogger(CSVInput.class);
-    private LinkedHashMap finalMap, expMap, weatherMap, soilMap; // Storage maps
-    private LinkedHashMap idMap;
+    private LinkedHashMap<String, LinkedHashMap<String, LinkedHashMap<String, Object>>> finalMap;
+    private LinkedHashMap<String, LinkedHashMap<String, Object>>expMap, weatherMap, soilMap; // Storage maps
+    private LinkedHashMap<String, String> idMap;
 
     private enum HeaderType {
         UNKNOWN, // Probably uninitialized
@@ -95,18 +96,15 @@ public class CSVInput implements TranslatorInput {
     private static class CSVHeader {
         private final ArrayList<String> headers;
         private final ArrayList<Integer> skippedColumns; 
-        private final PathType recordType;
 
         public CSVHeader(ArrayList<String> headers, ArrayList<Integer> sc) {
             this.headers = headers;
             this.skippedColumns = sc;
-            this.recordType = determineRecordType();
         }
 
         public CSVHeader() {
             this.headers = new ArrayList();
             this.skippedColumns = new ArrayList();
-            this.recordType = PathType.EXPERIMENT;
         }
 
         public ArrayList<String> getHeaders() {
@@ -115,18 +113,6 @@ public class CSVInput implements TranslatorInput {
 
         public ArrayList<Integer> getSkippedColumns() {
             return skippedColumns;
-        }
-
-        public PathType getRecordType() {
-            return recordType;
-        }
-
-        private PathType determineRecordType() {
-            for(String header: this.headers) {
-                PathType p = AcePathfinderUtil.getVariableType(header);
-                return p;
-            }
-            return PathType.EXPERIMENT;
         }
     }
 
@@ -156,8 +142,7 @@ public class CSVInput implements TranslatorInput {
             }
             zf.close();
         }
-        cleanUpFinalMap();
-        return finalMap;
+        return cleanUpFinalMap();
     }
 
 
@@ -211,55 +196,43 @@ public class CSVInput implements TranslatorInput {
             if (data[i].startsWith("!")) {
                 sc.add(i);
             }
-            h.add(data[i]);
+            if (data[i].trim().length() != 0) {
+                h.add(data[i]);
+            }
         }
         return new CSVHeader(h, sc);
     }
 
     protected void parseDataLine(CSVHeader header, HeaderType section, String[] data, boolean isComplete) {
         ArrayList<String> headers = header.getHeaders();
-        PathType recordType = header.getRecordType();
         int l = headers.size();
         String dataIndex;
         dataIndex = UUID.randomUUID().toString();
-        LinkedHashMap currentMap;
 
         if (! isComplete) {
             if (idMap.containsKey(data[0]) ) {
-                dataIndex = (String) idMap.get(data[0]);
+                dataIndex = idMap.get(data[0]);
             } else {
                 idMap.put(data[0], dataIndex);
             }
         }
-
-        switch (recordType) {
-            case WEATHER:
-                currentMap = weatherMap;
-                break;
-            case SOIL:
-                currentMap = soilMap;
-                break;
-            default:
-                currentMap = expMap;
-                break;
-        }
-
-        if (! currentMap.containsKey(dataIndex)) {
-            currentMap.put(dataIndex, new LinkedHashMap());
-        }
-        currentMap = (LinkedHashMap) currentMap.get(dataIndex);
-
-        if (header.getSkippedColumns().isEmpty()) {
-            for(int i=0; i < l; i++) {
+        if (data[1].toLowerCase().equals("event")) {
+            for (int i=3; i < l; i++) {
+                String var = data[i];
+                i++;
+                String val = data[i];
+                LOG.debug("Trimmed var: "+var.trim()+" and length: "+var.trim().length());
+                if (var.trim().length() != 0) {
+                    LOG.debug("INSERTING!");
+                    insertValue(dataIndex, var, val);
+                } else {
+                    LOG.debug("WTF!");
+                }
+            }
+        } else if (header.getSkippedColumns().isEmpty()) {
+            for (int i=0; i < l; i++) {
                 if (! data[i+1].equals("")) {
-                    String var = headers.get(i);
-                    if (var.equals("wst_id") || var.equals("soil_id")) {
-                        if (! expMap.containsKey(dataIndex)) {
-                            expMap.put(dataIndex, new LinkedHashMap());
-                        }
-                        AcePathfinderUtil.insertValue((LinkedHashMap) expMap.get(dataIndex), var, data[i+1]);
-                    }
-                    AcePathfinderUtil.insertValue(currentMap, var, data[i+1]);
+                    insertValue(dataIndex, headers.get(i), data[i+1]);
                 }
             }
         } else {
@@ -268,51 +241,91 @@ public class CSVInput implements TranslatorInput {
                 if (! data[i+1].equals("")) {
                     if (! skipped.contains(i+1)) {
                         String var = headers.get(i);
-                        if (var.equals("wst_id") || var.equals("soil_id")) {
-                            if (! expMap.containsKey(dataIndex)) {
-                                expMap.put(dataIndex, new LinkedHashMap());
-                            }
-                            AcePathfinderUtil.insertValue((LinkedHashMap) expMap.get(dataIndex), var, data[i+1]);
-
-                        }
-                        AcePathfinderUtil.insertValue(currentMap, headers.get(i), data[i+1]);
+                        insertValue(dataIndex, headers.get(i), data[i+1]);
                     }
                 }
             }
         }
     }
 
-    public void cleanUpFinalMap() {
+    protected void insertValue(String index, String variable, String value) {
+        String var = variable.toLowerCase();
+        LinkedHashMap<String, LinkedHashMap<String, Object>> topMap;
+        if (var.equals("wst_id") || var.equals("soil_id")) {
+            insertIndex(expMap, index);
+            LinkedHashMap<String, Object> temp = expMap.get(index);
+            temp.put(var, value);
+        }
+        switch (AcePathfinderUtil.getVariableType(var)) {
+            case WEATHER:
+                topMap = weatherMap;
+                break;
+            case SOIL:
+                topMap = soilMap;
+                break;
+            default:
+                topMap = expMap;
+                break;
+        }
+        insertIndex(topMap, index);
+        LinkedHashMap<String, Object> currentMap = topMap.get(index);
+        AcePathfinderUtil.insertValue(currentMap, var, value); 
+    }
+
+    protected void insertIndex(LinkedHashMap map, String index) {
+        if (! map.containsKey(index)) {
+            map.put(index, new LinkedHashMap());
+        }
+    }
+
+    protected LinkedHashMap cleanUpFinalMap() {
         ArrayList<String> toRemove = new ArrayList();
-        for(Object entry : expMap.entrySet()) {
-            String key = (String) entry.getKey();
-            LinkedHashMap ex = (LinkedHashMap) entry.getValue();
+        LinkedHashMap<String, ArrayList<LinkedHashMap<String, Object>>> base = new LinkedHashMap();
+        ArrayList<LinkedHashMap<String, Object>> experiments = new ArrayList();
+        ArrayList<LinkedHashMap<String, Object>> weathers = new ArrayList();
+        ArrayList<LinkedHashMap<String, Object>> soils = new ArrayList();
+
+        for (Map.Entry<String, LinkedHashMap<String, Object>> entry : expMap.entrySet()) {
+            String key = entry.getKey();
+            LinkedHashMap ex = entry.getValue();
             ex.remove("weather");
             ex.remove("soil");
-            if (ex.size() == 2 && ex.containsKey("weather") && ex.containsKey("soil"))  {
-                toRemove.add(key);
-            } else if (ex.size() == 1 && (ex.containsKey("weather") || ex.containsKey("soil"))) {
-                toRemove.add(key);
+            if (ex.size() == 2 && ex.containsKey("wst_id") && ex.containsKey("soil_id"))  {
+            } else if (ex.size() == 1 && (ex.containsKey("wst_id") || ex.containsKey("soil_id"))) {
+            } else {
+                experiments.add(ex);
             }
         }
-        for (String k : toRemove) {
-            expMap.remove(k);
+
+        for (Object wth : weatherMap.values()) {
+            if (wth instanceof LinkedHashMap) {
+                LinkedHashMap<String, Object> temp = (LinkedHashMap) wth;
+                if( temp.containsKey("weather") ) {
+                    LinkedHashMap<String, Object> weather = (LinkedHashMap<String, Object>) temp.get("weather");
+                    if (weather.size() == 1 && weather.containsKey("wst_id")) {
+                    } else {
+                        weathers.add(weather);
+                    }
+                }
+            }
         }
 
-        for(Object wVal : weatherMap.values()) {
-            ((LinkedHashMap) wVal).remove("wst_id");
+        for (Object sl : soilMap.values()) {
+            if (sl instanceof LinkedHashMap) {
+                LinkedHashMap<String, Object> temp = (LinkedHashMap) sl;
+                if( temp.containsKey("soil") ) {
+                    LinkedHashMap<String, Object> soil = (LinkedHashMap<String, Object>) temp.get("soil");
+                    if (soil.size() == 1 && soil.containsKey("soil_id")) {
+                    } else {
+                        soils.add(soil);
+                    }
+                }
+            }
         }
 
-        for(Object sVal : soilMap.values()) {
-            ((LinkedHashMap) sVal).remove("soil_id");
-        }
-
-        if (((LinkedHashMap)finalMap.get("soil")).size() == 0) {
-            finalMap.remove("soil");
-        }
-
-        if (((LinkedHashMap) finalMap.get("weather")).size() == 0) {
-            finalMap.remove("weather");
-        }
+        base.put("experiments", experiments);
+        base.put("weathers", weathers);
+        base.put("soils", soils);
+        return base;
     }
 }

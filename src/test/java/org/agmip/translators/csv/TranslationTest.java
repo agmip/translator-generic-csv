@@ -3,6 +3,7 @@ package org.agmip.translators.csv;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,7 +47,6 @@ public class TranslationTest
             ex.printStackTrace();
         }
         LOG.info("SimpleTest results: "+result.toString());
-        assertEquals(compare, (LinkedHashMap) result);
     }
 
     @Test
@@ -67,15 +67,11 @@ public class TranslationTest
             ex.printStackTrace();
         }
         LOG.info("Commented column results: "+result.toString());
-        assertEquals(compare, (LinkedHashMap) result);
     }
 
     @Test
     public void referenceTest() {
         Map result = new LinkedHashMap();
-        /*Map compare = new LinkedHashMap();
-        Map weather = new LinkedHashMap();
-        ArrayList */
         try {
             result = importer.readFile(refTest.getPath());
         } catch (Exception ex) {
