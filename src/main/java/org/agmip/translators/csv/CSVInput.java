@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -127,7 +130,7 @@ public class CSVInput implements TranslatorInput {
         finalMap.put("soil", soilMap);
     }
 
-    public Map readFile(String fileName) throws IOException {
+    public Map readFile(String fileName) throws Exception {
         if (fileName.toUpperCase().endsWith("CSV")) {
             readCSV(new FileInputStream(fileName));
         } else if (fileName.toUpperCase().endsWith("ZIP")) {
@@ -146,7 +149,7 @@ public class CSVInput implements TranslatorInput {
     }
 
 
-    protected void readCSV(InputStream fileStream) throws IOException {
+    protected void readCSV(InputStream fileStream) throws Exception {
         HeaderType section = HeaderType.UNKNOWN;
         LineType status;
         CSVHeader currentHeader = new CSVHeader();
@@ -155,6 +158,7 @@ public class CSVInput implements TranslatorInput {
         // Clear out the idMap for every file created.
         idMap.clear();
         int ln = 0;
+        LOG.debug(AcePathfinder.INSTANCE.peekAtDatefinder().toString());
 
         while ((nextLine = reader.readNext()) != null) {
             ln++;
@@ -203,7 +207,7 @@ public class CSVInput implements TranslatorInput {
         return new CSVHeader(h, sc);
     }
 
-    protected void parseDataLine(CSVHeader header, HeaderType section, String[] data, boolean isComplete) {
+    protected void parseDataLine(CSVHeader header, HeaderType section, String[] data, boolean isComplete) throws Exception {
         ArrayList<String> headers = header.getHeaders();
         int l = headers.size();
         String dataIndex;
@@ -218,15 +222,13 @@ public class CSVInput implements TranslatorInput {
         }
         if (data[1].toLowerCase().equals("event")) {
             for (int i=3; i < l; i++) {
-                String var = data[i];
+                String var = data[i].toLowerCase();
                 i++;
                 String val = data[i];
                 LOG.debug("Trimmed var: "+var.trim()+" and length: "+var.trim().length());
                 if (var.trim().length() != 0) {
                     LOG.debug("INSERTING!");
                     insertValue(dataIndex, var, val);
-                } else {
-                    LOG.debug("WTF!");
                 }
             }
         } else if (header.getSkippedColumns().isEmpty()) {
@@ -248,13 +250,26 @@ public class CSVInput implements TranslatorInput {
         }
     }
 
-    protected void insertValue(String index, String variable, String value) {
+    protected void insertValue(String index, String variable, String value) throws Exception {
         String var = variable.toLowerCase();
         LinkedHashMap<String, LinkedHashMap<String, Object>> topMap;
         if (var.equals("wst_id") || var.equals("soil_id")) {
             insertIndex(expMap, index);
             LinkedHashMap<String, Object> temp = expMap.get(index);
             temp.put(var, value);
+        } else {
+            if (AcePathfinder.INSTANCE.isDate(var)) {
+                try {
+                    LOG.debug("Converting date from: "+value);
+                    value = value.replace("/", "-");
+                    DateFormat f = new SimpleDateFormat("yyyymmdd");
+                    Date d = new SimpleDateFormat("yyyy-mm-dd").parse(value);
+                    value = f.format(d);
+                    LOG.debug("Converting date to: "+value);
+                } catch (Exception ex) {
+                    throw new Exception(ex);
+                }
+            }
         }
         switch (AcePathfinderUtil.getVariableType(var)) {
             case WEATHER:

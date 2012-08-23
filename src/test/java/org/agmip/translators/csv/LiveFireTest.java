@@ -1,6 +1,8 @@
 package org.agmip.translators.csv;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -12,6 +14,7 @@ import static org.junit.Assert.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.agmip.util.JSONAdapter;
 
 /**
  * Unit test for simple App.
@@ -19,34 +22,43 @@ import org.slf4j.LoggerFactory;
 public class LiveFireTest {
     private static Logger LOG = LoggerFactory.getLogger(LiveFireTest.class);
     private CSVInput importer;
-    private URL machakos, wheat;
+    private URL machakos, wheat, machakosOut;
 
     @Before
     public void setup() {
         importer = new CSVInput();
-        machakos = this.getClass().getResource("/machakos.csv");
+        machakos = this.getClass().getResource("/Machakos_csv.zip");
         wheat    = this.getClass().getResource("/wheat.zip");
     }
-
+    
     @Test
-    public void machakosTest() {
+    public void machakosTest() throws IOException {
         Map result = new LinkedHashMap();
         try {
             result = importer.readFile(machakos.getPath());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        LOG.info("Machakos results: "+result.toString());
+        //LOG.info("Machakos JSON: "+JSONAdapter.toJSON(result));
+        File out = new File("machakos.json");
+        if (! out.exists()) {
+            out.createNewFile();
+        }
+        FileWriter fw = new FileWriter(out.getAbsoluteFile());
+        BufferedWriter bw = new BufferedWriter(fw);
+        bw.write(JSONAdapter.toJSON(result));
+        bw.close();
+        fw.close();
     }
 
     @Test
-    public void wheatTest() {
+    public void wheatTest() throws IOException {
         Map result = new LinkedHashMap();
         try {
             result = importer.readFile(wheat.getPath());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        LOG.info("Wheat pilot results: "+result.toString());
+//        LOG.info("Wheat Pilot JSON: "+JSONAdapter.toJSON(result));
     }
 }
