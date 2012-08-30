@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.junit.Before;
-import static org.junit.Assert.*;
+//import static org.junit.Assert.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +20,7 @@ import org.agmip.util.JSONAdapter;
  * Unit test for simple App.
  */
 public class LiveFireTest {
+	/*
     private static Logger LOG = LoggerFactory.getLogger(LiveFireTest.class);
     private CSVInput importer;
     private URL machakos, wheat, machakosOut;
@@ -60,5 +61,5 @@ public class LiveFireTest {
             ex.printStackTrace();
         }
 //        LOG.info("Wheat Pilot JSON: "+JSONAdapter.toJSON(result));
-    }
+    }*/
 }

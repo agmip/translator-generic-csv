@@ -1,4 +1,1 @@
-#meta,exname,!ignore,fldrs,wst_id,pdate,plpop
-*,a,ignored,1.0,abc123,1981-02-03,1.0
-*,b,ignored,1.1,abc123,1981-02-04,2.0
-*,c,pay,2.0,aba111,1981-02-06,12.0
+#meta,exname,ignore,fldrs,wst_id,pdate,plpop*,a,ignored,1,abc123,2/3/81,1*,b,ignored,1.1,abc123,2/4/81,2*,c,pay,2,aba111,2/6/81,12

@@ -1,2 +1,7 @@
 target/*
 *.swp
+.DS_Store
+.settings/*
+.classpath
+.project
+.tmp
