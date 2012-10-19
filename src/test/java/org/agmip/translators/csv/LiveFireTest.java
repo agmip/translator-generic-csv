@@ -20,18 +20,20 @@ import org.agmip.util.JSONAdapter;
  * Unit test for simple App.
  */
 public class LiveFireTest {
-	/*
     private static Logger LOG = LoggerFactory.getLogger(LiveFireTest.class);
     private CSVInput importer;
-    private URL machakos, wheat, machakosOut;
+    //private URL machakos, wheat, machakosOut;
+    private URL wheatField;
 
     @Before
     public void setup() {
         importer = new CSVInput();
-        machakos = this.getClass().getResource("/Machakos_csv.zip");
-        wheat    = this.getClass().getResource("/wheat.zip");
+        //machakos = this.getClass().getResource("/Machakos_csv.zip");
+        //wheat    = this.getClass().getResource("/wheat.zip");
+        wheatField = this.getClass().getResource("/field.csv");
     }
-    
+   
+    /*
     @Test
     public void machakosTest() throws IOException {
         Map result = new LinkedHashMap();
@@ -40,7 +42,7 @@ public class LiveFireTest {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        //LOG.info("Machakos JSON: "+JSONAdapter.toJSON(result));
+        LOG.info("Machakos JSON: "+JSONAdapter.toJSON(result));
         File out = new File("machakos.json");
         if (! out.exists()) {
             out.createNewFile();
@@ -51,15 +53,15 @@ public class LiveFireTest {
         bw.close();
         fw.close();
     }
-
+*/
     @Test
     public void wheatTest() throws IOException {
         Map result = new LinkedHashMap();
         try {
-            result = importer.readFile(wheat.getPath());
+            result = importer.readFile(wheatField.getPath());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-//        LOG.info("Wheat Pilot JSON: "+JSONAdapter.toJSON(result));
-    }*/
+        LOG.info("Wheat Pilot JSON: "+JSONAdapter.toJSON(result));
+    }
 }

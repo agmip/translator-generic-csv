@@ -1,5 +1,5 @@
 !column, is, not, working
-#meta,exname,!ignore,fldrs,wst_id
+#,exname,!ignore,fldrs,wst_id
 a,Simple,1.0,2.0,abc123
 ,Harder,1.0,3.0,123abc
 %,tmin,tmax
