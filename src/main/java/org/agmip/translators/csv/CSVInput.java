@@ -140,6 +140,8 @@ public class CSVInput implements TranslatorInput {
                 LOG.debug("Found a complete experiment line");
                 section = HeaderType.SUMMARY;
                 parseDataLine(currentHeader, section, nextLine, true);
+            } else if (nextLine[0].startsWith("&")) {
+                LOG.debug("Found a DOME line, skipping");
             } else if (nextLine.length == 1) {
                 LOG.debug("Found a blank line, skipping");
             } else {

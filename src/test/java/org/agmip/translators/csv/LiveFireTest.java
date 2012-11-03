@@ -10,7 +10,8 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.junit.Before;
-//import static org.junit.Assert.*;
+import org.junit.Ignore;
+import static org.junit.Assert.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ import org.agmip.util.JSONAdapter;
 public class LiveFireTest {
     private static Logger LOG = LoggerFactory.getLogger(LiveFireTest.class);
     private CSVInput importer;
-    //private URL machakos, wheat, machakosOut;
+    private URL machakos, wheat, machakosOut;
     private URL wheatField;
 
     @Before
@@ -33,8 +34,9 @@ public class LiveFireTest {
         wheatField = this.getClass().getResource("/field.csv");
     }
    
-    /*
+    
     @Test
+    @Ignore
     public void machakosTest() throws IOException {
         Map result = new LinkedHashMap();
         try {
@@ -53,7 +55,7 @@ public class LiveFireTest {
         bw.close();
         fw.close();
     }
-*/
+
     @Test
     public void wheatTest() throws IOException {
         Map result = new LinkedHashMap();
