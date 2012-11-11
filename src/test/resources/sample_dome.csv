@@ -3,7 +3,8 @@
 &,INFO,Stratum,1,,,,,,,,,
 &,INFO,MAN_ID,1,,,,,,,,,
 ,,,,,,,,,,,,
-&,FILL,CUL_NAME,OBATAMPA,,,,,,,,,
+&,REPLACE,CUL_NAME,OBATAMPA,,,,,,,,,
+&,REPLACE,PDATE,OFFSET_DATE()|$PDATE|10
 ,,,,,,,,,,,,
 ,,,,,,,,,,,,
 ,,,,,,,,,,,,

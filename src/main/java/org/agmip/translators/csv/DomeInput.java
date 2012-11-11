@@ -17,18 +17,20 @@ import org.agmip.core.types.TranslatorInput;
 
 public class DomeInput implements TranslatorInput {
     private static final Logger log = LoggerFactory.getLogger(DomeInput.class);
-    private HashMap<String, ArrayList<HashMap<String,String>>> dome = new HashMap<String, ArrayList<HashMap<String,String>>>();
+    private HashMap<String, Object> dome = new HashMap<String, Object>();
 
     public Map readFile(String fileName) throws Exception {
         if (fileName.toUpperCase().endsWith("CSV")) {
+            FileInputStream stream = new FileInputStream(fileName);
             readCSV(new FileInputStream(fileName));
+            stream.close();
         }
         return dome;
     }
 
     public void readCSV(InputStream stream) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-        ArrayList<HashMap<String, String>> info  = new ArrayList<HashMap<String, String>>();
+        HashMap<String, String> info  = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> rules = new ArrayList<HashMap<String, String>>();
         CSVReader reader = new CSVReader(br);
         String[] nextLine;
@@ -42,8 +44,7 @@ public class DomeInput implements TranslatorInput {
                 log.debug("Found a DOME instruction at line {}", ln);
                 String cmd = nextLine[1].trim().toUpperCase();
                 if (cmd.equals("INFO")) {
-                    lineMap.put(nextLine[2].toLowerCase(), nextLine[3].toUpperCase());
-                    info.add(lineMap);
+                    info.put(nextLine[2].toLowerCase(), nextLine[3].toUpperCase());
                 } else if ((cmd.equals("FILL") || cmd.equals("REPLACE"))) {
                     StringBuilder args = new StringBuilder();
                     if (nextLine[3].endsWith("()")) {
@@ -84,19 +85,12 @@ public class DomeInput implements TranslatorInput {
                 }
             } 
         }
+        br.close();
         dome.put("info", info);
         dome.put("rules", rules);
     }
 
-    public HashMap<String, ArrayList<HashMap<String,String>>> getDome() {
+    public HashMap<String, Object> getDome() {
         return dome;
-    }
-
-    public ArrayList<HashMap<String, String>> getDomeInfo() {
-        return dome.get("info");
-    }
-
-    public ArrayList<HashMap<String, String>> getDomeRules() {
-        return dome.get("rules");
     }
 }

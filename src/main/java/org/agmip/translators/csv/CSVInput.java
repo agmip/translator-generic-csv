@@ -240,8 +240,7 @@ public class CSVInput implements TranslatorInput {
                     topMap = soilMap;
                     break;
                 case UNKNOWN:
-                    LOG.error("Skipping unknown variable: [" + var + "]");
-                    return;
+                    LOG.warn("Putting unknow variable into root: [" + var + "]");
                 default:
                     topMap = expMap;
                     break;
