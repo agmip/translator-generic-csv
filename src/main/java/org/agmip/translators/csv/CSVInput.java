@@ -44,6 +44,7 @@ public class CSVInput implements TranslatorInput {
     private HashMap<String, HashMap<String, HashMap<String, Object>>> finalMap;
     private HashMap<String, HashMap<String, Object>> expMap, weatherMap, soilMap; // Storage maps
     private HashMap<String, String> idMap;
+    private ArrayList<String> orderring;
     private String listSeparator;
     private AcePathfinder pathfinder = AcePathfinderUtil.getInstance();
 
@@ -83,6 +84,7 @@ public class CSVInput implements TranslatorInput {
         weatherMap = new HashMap<String, HashMap<String, Object>>();
         soilMap = new HashMap<String, HashMap<String, Object>>();
         idMap = new HashMap<String, String>();
+        orderring = new ArrayList<String>();
         finalMap = new HashMap<String, HashMap<String, HashMap<String, Object>>>();
         this.listSeparator = ",";
         finalMap.put("experiments", expMap);
@@ -218,7 +220,7 @@ public class CSVInput implements TranslatorInput {
             String var = variable.toLowerCase();
             HashMap<String, HashMap<String, Object>> topMap;
             if (var.equals("wst_id") || var.equals("soil_id")) {
-                insertIndex(expMap, index);
+                insertIndex(expMap, index, true);
                 HashMap<String, Object> temp = expMap.get(index);
                 temp.put(var, value);
             } else {
@@ -232,6 +234,7 @@ public class CSVInput implements TranslatorInput {
 
                 }
             }
+            boolean isExperimentMap = false;
             switch (AcePathfinderUtil.getVariableType(var)) {
                 case WEATHER:
                     topMap = weatherMap;
@@ -242,10 +245,11 @@ public class CSVInput implements TranslatorInput {
                 case UNKNOWN:
                     LOG.warn("Putting unknow variable into root: [" + var + "]");
                 default:
+                    isExperimentMap = true;
                     topMap = expMap;
                     break;
             }
-            insertIndex(topMap, index);
+            insertIndex(topMap, index, isExperimentMap);
             HashMap<String, Object> currentMap = topMap.get(index);
             AcePathfinderUtil.insertValue(currentMap, var, value);
         } catch (Exception ex) {
@@ -253,9 +257,13 @@ public class CSVInput implements TranslatorInput {
         }
     }
 
-    protected void insertIndex(HashMap<String, HashMap<String, Object>> map, String index) {
+    protected void insertIndex(HashMap<String, HashMap<String, Object>> map, String index, boolean isExperimentMap) {
         if (!map.containsKey(index)) {
             map.put(index, new HashMap<String, Object>());
+            if (isExperimentMap) {
+                orderring.add(index);
+            }
+
         }
     }
 
@@ -265,7 +273,9 @@ public class CSVInput implements TranslatorInput {
         ArrayList<HashMap<String, Object>> weathers = new ArrayList<HashMap<String, Object>>();
         ArrayList<HashMap<String, Object>> soils = new ArrayList<HashMap<String, Object>>();
 
-        for (HashMap<String, Object> ex : expMap.values()) {
+        for (String id : orderring) {
+        //for (HashMap<String, Object> ex : expMap.values()) {
+            HashMap<String, Object> ex = expMap.get(id);
             ex.remove("weather");
             ex.remove("soil");
             if (ex.size() == 2 && ex.containsKey("wst_id") && ex.containsKey("soil_id")) {
