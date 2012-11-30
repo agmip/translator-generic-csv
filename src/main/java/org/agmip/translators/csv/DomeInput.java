@@ -18,6 +18,12 @@ import org.agmip.core.types.TranslatorInput;
 public class DomeInput implements TranslatorInput {
     private static final Logger log = LoggerFactory.getLogger(DomeInput.class);
     private HashMap<String, Object> dome = new HashMap<String, Object>();
+    private ArrayList<String> generatorFunctions = new ArrayList<String>();
+
+
+    public DomeInput() {
+        generatorFunctions.add("AUTO_PDATE()");
+    }
 
     public Map readFile(String fileName) throws Exception {
         if (fileName.toUpperCase().endsWith("CSV")) {
@@ -35,6 +41,7 @@ public class DomeInput implements TranslatorInput {
         CSVReader reader = new CSVReader(br);
         String[] nextLine;
         int ln = 0;
+        boolean hasGenerator = false;
 
         while ((nextLine = reader.readNext()) != null) {
             HashMap<String, String> lineMap = new HashMap<String, String>();
@@ -49,6 +56,9 @@ public class DomeInput implements TranslatorInput {
                     StringBuilder args = new StringBuilder();
                     if (nextLine[3].endsWith("()")) {
                         // Handle Arguments
+                        if (generatorFunctions.contains(nextLine[3].toUpperCase())) {
+                            hasGenerator = true;
+                        }
                         int argLen = nextLine.length - 3;
 
                         if (argLen != 0) {
@@ -86,6 +96,9 @@ public class DomeInput implements TranslatorInput {
             } 
         }
         br.close();
+        if (hasGenerator) {
+            info.put("has_generator", "Y");
+        }
         dome.put("info", info);
         dome.put("rules", rules);
     }
