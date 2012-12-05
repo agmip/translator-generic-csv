@@ -46,4 +46,17 @@ public class DomeInputTest {
         }
         assertTrue(true);
     }
+
+    @Test
+    public void domeReadGeneratorTest() {
+        resource = this.getClass().getResource("/dome_test_v1_5_multi.csv");
+        try {
+            Map dome = translator.readFile(resource.getPath());
+            log.info("Translation results: {}", dome.toString());
+        } catch (Exception ex) {
+            assertTrue(false);
+            ex.printStackTrace();
+        }
+        assertTrue(true);
+    }
 }
