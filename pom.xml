@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.agmip.translators</groupId>
     <artifactId>translator-generic-csv</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.1</version>
     <name>translators-generic-csv</name>
     <url>http://www.agmip.org/</url>
 
@@ -63,7 +63,7 @@
         <connection>scm:git:git://github.com/agmip/translators-generic-csv.git</connection>
         <developerConnection>scm:git:git@github.com/agmip/translators-generic-csv.git</developerConnection>
         <url>https://github.com/agmip/translators-generic-csv</url>
-      <tag>HEAD</tag>
+      <tag>translator-generic-csv-1.1.1</tag>
   </scm>
     
     <build>
