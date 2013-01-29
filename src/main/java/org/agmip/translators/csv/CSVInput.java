@@ -29,13 +29,13 @@ import org.agmip.core.types.TranslatorInput;
  * format. It uses a common file pattern as described below.
  *
  * <p><b>First Column Descriptors</b></p>
- * <p># - Lines with the first column text containing only a "#" is considered 
+ * <p># - Lines with the first column text containing only a "#" is considered
  * a header row</p>
  * <p>! - Lines with the first column text containing only a "!" are considered
  * a comment and not parsed.
  *
  * The first header/datarow(s) are metadata (or global data) if there are multiple
- * rows of metadata, they are considered to be a collection of experiments. 
+ * rows of metadata, they are considered to be a collection of experiments.
  *
  */
 public class CSVInput implements TranslatorInput {
@@ -115,7 +115,7 @@ public class CSVInput implements TranslatorInput {
         CSVHeader currentHeader = new CSVHeader();
         String[] nextLine;
         BufferedReader br = new BufferedReader(new InputStreamReader(fileStream));
-        
+
         // Check to see if this is an international CSV. (;, vs ,.)
         setListSeparator(br);
         CSVReader reader = new CSVReader(br, this.listSeparator.charAt(0));
@@ -147,8 +147,21 @@ public class CSVInput implements TranslatorInput {
             } else if (nextLine.length == 1) {
                 LOG.debug("Found a blank line, skipping");
             } else {
-                LOG.debug("Found a data line with [" + nextLine[0] + "] as the index");
-                parseDataLine(currentHeader, section, nextLine, false);
+                boolean isBlank = true;
+                // Check the nextLine array for all blanks
+                int nlLen = nextLine.length;
+                for(int i=0; i < nlLen; i++) {
+                    if (! nextLine[i].equals("")) {
+                        isBlank = false;
+                        break;
+                    }
+                }
+                if (!isBlank) {
+                    LOG.debug("Found a data line with [" + nextLine[0] + "] as the index");
+                    parseDataLine(currentHeader, section, nextLine, false);
+                } else {
+                    LOG.debug("Found a blank line, skipping");
+                }
             }
         }
         reader.close();
