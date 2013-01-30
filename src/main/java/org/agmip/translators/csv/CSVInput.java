@@ -43,6 +43,7 @@ public class CSVInput implements TranslatorInput {
     private static Logger LOG = LoggerFactory.getLogger(CSVInput.class);
     private HashMap<String, HashMap<String, HashMap<String, Object>>> finalMap;
     private HashMap<String, HashMap<String, Object>> expMap, weatherMap, soilMap; // Storage maps
+    private HashMap<String, Integer> trtTracker;
     private HashMap<String, String> idMap;
     private ArrayList<String> orderring;
     private String listSeparator;
@@ -83,7 +84,9 @@ public class CSVInput implements TranslatorInput {
         expMap = new HashMap<String, HashMap<String, Object>>();
         weatherMap = new HashMap<String, HashMap<String, Object>>();
         soilMap = new HashMap<String, HashMap<String, Object>>();
+        trtTracker = new HashMap<String, Integer>();
         idMap = new HashMap<String, String>();
+
         orderring = new ArrayList<String>();
         finalMap = new HashMap<String, HashMap<String, HashMap<String, Object>>>();
         this.listSeparator = ",";
@@ -236,6 +239,14 @@ public class CSVInput implements TranslatorInput {
                 insertIndex(expMap, index, true);
                 HashMap<String, Object> temp = expMap.get(index);
                 temp.put(var, value);
+            } else if (var.equals("exname")) {
+                Integer i = 0;
+                if (trtTracker.containsKey(value)) {
+                    i = trtTracker.get(value);
+                }
+                i = i + 1;
+                trtTracker.put(value, i);
+                value = value+"_"+i;
             } else {
                 if (pathfinder.isDate(var)) {
                     LOG.debug("Converting date from: " + value);
