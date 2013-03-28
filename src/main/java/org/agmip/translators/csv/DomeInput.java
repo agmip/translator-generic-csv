@@ -23,6 +23,7 @@ public class DomeInput implements TranslatorInput {
 
     public DomeInput() {
         generatorFunctions.add("AUTO_PDATE()");
+        generatorFunctions.add("AUTO_REPLICATE_EVENTS()");
     }
 
     public Map readFile(String fileName) throws Exception {
