@@ -45,6 +45,7 @@ public class DomeInput implements TranslatorInput {
 //        HashMap<String, ArrayList<String>> linkStg = new HashMap<String, ArrayList<String>>();
         ArrayList<HashMap<String, String>> rules = new ArrayList<HashMap<String, String>>();
         ArrayList<HashMap<String, String>> generators = new ArrayList<HashMap<String, String>>();
+        ArrayList<ArrayList<HashMap<String, String>>> genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
         CSVReader reader = new CSVReader(br);
         String[] nextLine;
         int ln = 0;
@@ -104,8 +105,11 @@ public class DomeInput implements TranslatorInput {
                     lineMap.put("variable", nextLine[2]);
                     if (isGenerator) {
                         generators.add(lineMap);
+                        genGroups.add(generators);
+                        generators = new ArrayList<HashMap<String, String>>();
                     } else {
                         rules.add(lineMap);
+                        generators.add(lineMap);
                     }
 //                } else if (cmd.equals("LINK")) {
 //                    String keyType = nextLine[2].trim().toUpperCase();
@@ -135,7 +139,11 @@ public class DomeInput implements TranslatorInput {
         }
         br.close();
         if (hasGenerator) {
-            dome.put("generators", generators);
+            if (!generators.isEmpty()) {
+                generators.add(new HashMap());
+                genGroups.add(generators);
+            }
+            dome.put("generators", genGroups);
         }
         dome.put("info", info);
         dome.put("rules", rules);
