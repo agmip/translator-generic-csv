@@ -49,7 +49,7 @@ public class DomeInput implements TranslatorInput {
         CSVReader reader = new CSVReader(br);
         String[] nextLine;
         int ln = 0;
-        boolean hasGenerator = false;
+//        boolean hasGenerator = false;
 
         while ((nextLine = reader.readNext()) != null) {
             boolean isGenerator = false;
@@ -70,7 +70,7 @@ public class DomeInput implements TranslatorInput {
                             if (!cmd.equals("FILL") || !ruleFunctions.contains(nextLine[3].toUpperCase())) {
                                 log.debug("Found a generator!!!");
                                 isGenerator = true;
-                                hasGenerator = true;
+//                                hasGenerator = true;
                             }
                         }
                         int argLen = nextLine.length - 3;
@@ -138,13 +138,11 @@ public class DomeInput implements TranslatorInput {
             }
         }
         br.close();
-        if (hasGenerator) {
-            if (!generators.isEmpty()) {
-                generators.add(new HashMap());
-                genGroups.add(generators);
-            }
-            dome.put("generators", genGroups);
+        if (!generators.isEmpty()) {
+            generators.add(new HashMap());
+            genGroups.add(generators);
         }
+        dome.put("generators", genGroups);
         dome.put("info", info);
         dome.put("rules", rules);
 //        dome.put("link_overlay", linkOvl);
