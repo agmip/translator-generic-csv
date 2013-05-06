@@ -16,6 +16,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
 import au.com.bytecode.opencsv.CSVReader;
+import java.util.HashSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class CSVInput implements TranslatorInput {
     private ArrayList<String> orderring;
     private String listSeparator;
     private AcePathfinder pathfinder = AcePathfinderUtil.getInstance();
+    private static HashSet unknowVars = new HashSet();
 
     private enum HeaderType {
 
@@ -267,7 +269,10 @@ public class CSVInput implements TranslatorInput {
                     topMap = soilMap;
                     break;
                 case UNKNOWN:
-                    LOG.warn("Putting unknow variable into root: [" + var + "]");
+                    if (!unknowVars.contains(var)) {
+                        LOG.warn("Putting unknow variable into root: [" + var + "]");
+                        unknowVars.add(var);
+                    }
                 default:
                     isExperimentMap = true;
                     topMap = expMap;
@@ -352,7 +357,7 @@ public class CSVInput implements TranslatorInput {
         while ((sample = in.readLine()) != null) {
             if (sample.startsWith("#")) {
                 String listSeperator = sample.substring(1,2);
-                LOG.info("FOUND SEPARATOR: "+listSeperator);
+                LOG.debug("FOUND SEPARATOR: "+listSeperator);
                 this.listSeparator = listSeperator;
                 break;
             }
