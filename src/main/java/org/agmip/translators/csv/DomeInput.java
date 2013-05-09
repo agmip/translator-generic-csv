@@ -61,13 +61,13 @@ public class DomeInput implements TranslatorInput {
                 String cmd = nextLine[1].trim().toUpperCase();
                 if (cmd.equals("INFO")) {
                     info.put(nextLine[2].toLowerCase(), nextLine[3].toUpperCase());
-                } else if ((cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY"))) {
+                } else if ((cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("CREATE"))) {
                     StringBuilder args = new StringBuilder();
                     if (nextLine[3].endsWith("()")) {
                         log.debug("Found fun {}", nextLine[3].toUpperCase());
                         // Handle Arguments
                         if (generatorFunctions.contains(nextLine[3].toUpperCase())) {
-                            if (!cmd.equals("FILL") || !ruleFunctions.contains(nextLine[3].toUpperCase())) {
+                            if (cmd.equals("REPLACE") || !ruleFunctions.contains(nextLine[3].toUpperCase())) {
                                 log.debug("Found a generator!!!");
                                 isGenerator = true;
 //                                hasGenerator = true;
