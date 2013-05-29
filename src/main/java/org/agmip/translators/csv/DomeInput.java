@@ -51,13 +51,14 @@ public class DomeInput implements TranslatorInput {
         int ln = 0;
 //        boolean hasGenerator = false;
 
+        HashMap<String, String> lineMap = new HashMap<String, String>();
         while ((nextLine = reader.readNext()) != null) {
             boolean isGenerator = false;
-            HashMap<String, String> lineMap = new HashMap<String, String>();
             ln++;
             if (nextLine[0].startsWith("&")) {
                 // This is an official dome line.
                 log.debug("Found a DOME instruction at line {}", ln);
+                lineMap = new HashMap<String, String>();
                 String cmd = nextLine[1].trim().toUpperCase();
                 if (cmd.equals("INFO")) {
                     info.put(nextLine[2].toLowerCase(), nextLine[3].toUpperCase());
@@ -134,6 +135,23 @@ public class DomeInput implements TranslatorInput {
 //                    }
                 } else {
                     log.error("Found invalid command {} at line {}", cmd, ln);
+                }
+            } else if (nextLine[0].startsWith("+")) {
+                log.debug("Found a DOME instruction continuance at line {}", ln);
+                String preArgs = lineMap.get("args");
+                if (preArgs != null && !"".equals(preArgs)) {
+                    StringBuilder addArgs = new StringBuilder();
+                    addArgs.append(preArgs);
+                    for (int i = 4; i < nextLine.length; i++) {
+                        if(nextLine[i].startsWith("!")) {
+                            break;
+                        }
+                        if (!nextLine[i].equals("")) {
+                            addArgs.append("|");
+                            addArgs.append(nextLine[i].toUpperCase());
+                        }
+                    }
+                    lineMap.put("args", addArgs.toString());
                 }
             }
         }
