@@ -280,7 +280,7 @@ public class CSVInput implements TranslatorInput {
             }
             insertIndex(topMap, index, isExperimentMap);
             HashMap<String, Object> currentMap = topMap.get(index);
-            AcePathfinderUtil.insertValue(currentMap, var, value);
+            AcePathfinderUtil.insertValue(currentMap, var, value, true);
         } catch (Exception ex) {
             throw new Exception(ex);
         }
