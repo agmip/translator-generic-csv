@@ -41,8 +41,8 @@ public class DomeInput implements TranslatorInput {
     public void readCSV(InputStream stream) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(stream));
         HashMap<String, String> info = new HashMap<String, String>();
-//        HashMap<String, ArrayList<String>> linkOvl = new HashMap<String, ArrayList<String>>();
-//        HashMap<String, ArrayList<String>> linkStg = new HashMap<String, ArrayList<String>>();
+        HashMap<String, String> linkOvl = new HashMap<String, String>();
+        HashMap<String, String> linkStg = new HashMap<String, String>();
         ArrayList<HashMap<String, String>> rules = new ArrayList<HashMap<String, String>>();
         ArrayList<HashMap<String, String>> generators = new ArrayList<HashMap<String, String>>();
         ArrayList<ArrayList<HashMap<String, String>>> genGroups = new ArrayList<ArrayList<HashMap<String, String>>>();
@@ -112,27 +112,20 @@ public class DomeInput implements TranslatorInput {
                         rules.add(lineMap);
                         generators.add(lineMap);
                     }
-//                } else if (cmd.equals("LINK")) {
-//                    String keyType = nextLine[2].trim().toUpperCase();
-//                    String keyValue = nextLine[3].trim();
-//                    String key = keyType + "_" + keyValue;
-//                    String domeType = nextLine[4].trim();
-//                    ArrayList<String> domeIds;
-//                    if (domeType.toUpperCase().equals("OVERLAY")) {
-//                        domeIds = getDomeIds(linkOvl, key);
-//                    } else if (domeType.toUpperCase().equals("STRATEGY")) {
-//                        domeIds = getDomeIds(linkStg, key);
-//                    } else {
-//                        log.error("Found invalid DOME type {} at line {}", domeType, ln);
-//                        continue;
-//                    }
-//                    for (int i = 5; i < nextLine.length; i++) {
-//                        if (nextLine[i].trim().startsWith("!")) {
-//                            break;
-//                        } else if (!nextLine[i].trim().equals("")) {
-//                            domeIds.add(nextLine[i].trim());
-//                        }
-//                    }
+                } else if (cmd.equals("LINK")) {
+                    log.debug("Found a DOME LINK discription at line {}", ln);
+                    String keyType = nextLine[2].trim().toUpperCase();
+                    String keyValue = nextLine[3].trim();
+                    String key = keyType + "_" + keyValue;
+                    String domeType = nextLine[4].trim();
+                    if (domeType.toUpperCase().equals("OVERLAY")) {
+                        setDomeIds(linkOvl, key, nextLine);
+                    } else if (domeType.toUpperCase().equals("STRATEGY")) {
+                        setDomeIds(linkStg, key, nextLine);
+                    } else {
+                        log.error("Found invalid DOME type {} at line {}", domeType, ln);
+                        continue;
+                    }
                 } else {
                     log.error("Found invalid command {} at line {}", cmd, ln);
                 }
@@ -163,20 +156,35 @@ public class DomeInput implements TranslatorInput {
         dome.put("generators", genGroups);
         dome.put("info", info);
         dome.put("rules", rules);
-//        dome.put("link_overlay", linkOvl);
-//        dome.put("link_stragty", linkStg);
+        if (!linkOvl.isEmpty()) {
+            dome.put("link_overlay", linkOvl);
+        }
+        if (!linkStg.isEmpty()) {
+            dome.put("link_stragty", linkStg);
+        }
     }
 
     public HashMap<String, Object> getDome() {
         return dome;
     }
 
-//    private ArrayList<String> getDomeIds(HashMap<String, ArrayList<String>> link, String key) {
-//        ArrayList<String> domeIds = link.get(key);
-//        if (domeIds == null) {
-//            domeIds = new ArrayList<String>();
-//            link.put(key, domeIds);
-//        }
-//        return domeIds;
-//    }
+    private void setDomeIds(HashMap<String, String> link, String key, String[] domeIds) {
+        int start = 5;
+        String ids = link.get(key);
+        if ((ids == null || "".equals(ids)) && start < domeIds.length) {
+            ids = domeIds[start].trim();
+            start++;
+        }
+        
+        for (int i = start; i < domeIds.length; i++) {
+            if (domeIds[i].trim().startsWith("!")) {
+                break;
+            } else if (!domeIds[i].trim().equals("")) {
+                ids += "|" + domeIds[i].trim();
+            }
+        }
+        if (ids != null && !"".equals(ids)) {
+            link.put(key, ids);
+        }
+    }
 }

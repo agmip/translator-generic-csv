@@ -75,12 +75,12 @@ public class DomeInputTest {
     }
 
     @Test
-    @Ignore
     public void domeLinkTest() {
+        log.debug("dome link test start");
         resource = this.getClass().getResource("/Link.csv");
         try {
             Map dome = translator.readFile(resource.getPath());
-            log.info("Translation results: {}", dome.toString());
+            log.info("Translation results for link csv test: {}", dome.toString());
         } catch (Exception ex) {
             assertTrue(false);
             ex.printStackTrace();

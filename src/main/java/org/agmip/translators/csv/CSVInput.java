@@ -42,7 +42,7 @@ import org.agmip.core.types.TranslatorInput;
 public class CSVInput implements TranslatorInput {
 
     private static Logger LOG = LoggerFactory.getLogger(CSVInput.class);
-    private HashMap<String, HashMap<String, HashMap<String, Object>>> finalMap;
+//    private HashMap<String, HashMap<String, HashMap<String, Object>>> finalMap;
     private HashMap<String, HashMap<String, Object>> expMap, weatherMap, soilMap; // Storage maps
     private HashMap<String, Integer> trtTracker;
     private HashMap<String, String> idMap;
@@ -90,13 +90,14 @@ public class CSVInput implements TranslatorInput {
         idMap = new HashMap<String, String>();
 
         orderring = new ArrayList<String>();
-        finalMap = new HashMap<String, HashMap<String, HashMap<String, Object>>>();
+//        finalMap = new HashMap<String, HashMap<String, HashMap<String, Object>>>();
         this.listSeparator = ",";
-        finalMap.put("experiments", expMap);
-        finalMap.put("weather", weatherMap);
-        finalMap.put("soil", soilMap);
+//        finalMap.put("experiments", expMap);
+//        finalMap.put("weather", weatherMap);
+//        finalMap.put("soil", soilMap);
     }
 
+    @Override
     public Map readFile(String fileName) throws Exception {
         if (fileName.toUpperCase().endsWith("CSV")) {
             readCSV(new FileInputStream(fileName));
@@ -353,7 +354,7 @@ public class CSVInput implements TranslatorInput {
     protected void setListSeparator(BufferedReader in) throws Exception {
         // Set a mark at the beginning of the file, so we can get back to it.
         in.mark(7168);
-        String sample = "";
+        String sample;
         while ((sample = in.readLine()) != null) {
             if (sample.startsWith("#")) {
                 String listSeperator = sample.substring(1,2);
