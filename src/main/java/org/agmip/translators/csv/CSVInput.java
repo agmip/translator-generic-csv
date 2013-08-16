@@ -127,7 +127,9 @@ public class CSVInput implements TranslatorInput {
             while (e.hasMoreElements()) {
                 ZipEntry ze = (ZipEntry) e.nextElement();
                 LOG.debug("Entering file: " + ze);
-                readCSV(zf.getInputStream(ze));
+                if (ze.getName().toLowerCase().endsWith(".csv")) {
+                    readCSV(zf.getInputStream(ze));
+                }
             }
             zf.close();
         }
