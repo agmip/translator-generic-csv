@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,33 @@ public class DomeInputTest {
         try {
             Map dome = translator.readFile(resource.getPath());
             log.info("Translation results: {}", dome.toString());
+        } catch (Exception ex) {
+            assertTrue(false);
+            ex.printStackTrace();
+        }
+        assertTrue(true);
+    }
+
+    @Test
+    public void domeContinueTest() {
+        resource = this.getClass().getResource("/continue_test.csv");
+        try {
+            Map dome = translator.readFile(resource.getPath());
+            log.info("Translation results for continue_test: {}", dome.toString());
+        } catch (Exception ex) {
+            assertTrue(false);
+            ex.printStackTrace();
+        }
+        assertTrue(true);
+    }
+
+    @Test
+    public void domeLinkTest() {
+        log.debug("dome link test start");
+        resource = this.getClass().getResource("/Link.csv");
+        try {
+            Map dome = translator.readFile(resource.getPath());
+            log.info("Translation results for link csv test: {}", dome.toString());
         } catch (Exception ex) {
             assertTrue(false);
             ex.printStackTrace();
