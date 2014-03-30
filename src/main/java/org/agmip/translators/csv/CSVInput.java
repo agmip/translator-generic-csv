@@ -303,13 +303,12 @@ public class CSVInput implements TranslatorInput {
                     switch (header.getDefPathType()) {
                         case WEATHER:
                             topMap = weatherMap;
-                            path = header.getDefPath();
                             break;
                         case SOIL:
                             topMap = soilMap;
-                            path = header.getDefPath();
                             break;
                     }
+                    path = header.getDefPath();
                     if (!unknowVars.contains(var)) {
                         if (path != null || "".equals(path)) {
                             LOG.warn("Putting unknow variable into [{}] section: [{}]", path, var);
