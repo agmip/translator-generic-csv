@@ -8,24 +8,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.agmip.common.Functions;
 import org.agmip.core.types.TranslatorOutput;
 import static org.agmip.util.MapUtil.*;
 
 /**
- * This class converts the data from AgMIP ACE JSON format into CSV formatted files.
+ * This class converts the data from AgMIP ACE JSON format into CSV formatted
+ * files.
  *
  * @author Meng Zhang
  */
 public class CSVOutput implements TranslatorOutput {
-    
+
     protected ArrayList<File> outputWthFiles;
 
     @Override
     public void writeFile(String outputDirectory, Map data) throws IOException {
-        outputDirectory = revisePath(outputDirectory);
+        outputDirectory = Functions.revisePath(outputDirectory);
         writeWthFile(outputDirectory, data);
     }
-    
+
     protected void writeWthFile(String outputDirectory, Map data) throws IOException {
         outputWthFiles = new ArrayList();
         // Get Weather data from data set
@@ -38,7 +40,7 @@ public class CSVOutput implements TranslatorOutput {
                 wthArr.add(getObjectOr(data, "weather", new HashMap()));
             }
         }
-        
+
         // Output weather csv file for each weather station
         for (HashMap<String, Object> wthData : wthArr) {
             File csv = getWthFileName(wthData, outputDirectory);
@@ -46,7 +48,7 @@ public class CSVOutput implements TranslatorOutput {
             CSVWriter writer = new CSVWriter(bw, ',');
             ArrayList<String> headerKeys = new ArrayList();
             ArrayList<String> nextLine;
-            
+
             // Write weahter file site section headers
             nextLine = new ArrayList();
             nextLine.add("#");
@@ -59,7 +61,7 @@ public class CSVOutput implements TranslatorOutput {
                 }
             }
             writer.writeNext(nextLine.toArray(new String[0]));
-            
+
             // Write weahter file site section values
             nextLine = new ArrayList();
             nextLine.add("");
@@ -67,7 +69,7 @@ public class CSVOutput implements TranslatorOutput {
                 nextLine.add(getValueOr(wthData, key, ""));
             }
             writer.writeNext(nextLine.toArray(new String[0]));
-            
+
             // Write weahter file daily section headers
             ArrayList<HashMap<String, String>> dailyArr = new BucketEntry(wthData).getDataList();
             headerKeys = new ArrayList();
@@ -85,7 +87,7 @@ public class CSVOutput implements TranslatorOutput {
                 }
                 writer.writeNext(nextLine.toArray(new String[0]));
             }
-            
+
             // Write weahter file daily section values
             for (HashMap<String, String> dailyData : dailyArr) {
                 nextLine = new ArrayList();
@@ -95,37 +97,13 @@ public class CSVOutput implements TranslatorOutput {
                 }
                 writer.writeNext(nextLine.toArray(new String[0]));
             }
-            
+
             writer.flush();
             writer.close();
             outputWthFiles.add(csv);
         }
     }
 
-    /**
-     * Revise output path
-     *
-     * @param path the output path
-     * @return revised path
-     */
-    private String revisePath(String path) {
-        if (!path.trim().equals("")) {
-//            path = path.replaceAll("/", File.separator);
-            if (!path.endsWith(File.separator)) {
-                path += File.separator;
-            }
-            File f = new File(path);
-            if (f != null && !f.exists()) {
-                f.mkdirs();
-            }
-            if (!f.isDirectory()) {
-                f = f.getParentFile();
-                path = f.getPath();
-            }
-        }
-        return path;
-    }
-    
     private File getWthFileName(HashMap wthData, String outputDirectory) {
         String path = getValueOr(wthData, "wst_id", "TEMP");
         path += getValueOr(wthData, "clim_id", "");
@@ -138,7 +116,7 @@ public class CSVOutput implements TranslatorOutput {
         }
         return f;
     }
-    
+
     public ArrayList<File> getOutputWthFiles() {
         return this.outputWthFiles;
     }
