@@ -104,7 +104,7 @@ public class AlnkOutput implements TranslatorOutput {
         HashSet finExnames = new HashSet();
         for (HashMap m : dataArr) {
             nextLine = new ArrayList();
-            nextLine.add("");
+            nextLine.add("*");
             if (!isNoExp) {
                 String exname = getValueOr(m, "exname", "");
                 if ("Y".equals(getValueOr(m, "seasonal_dome_applied", ""))) {
