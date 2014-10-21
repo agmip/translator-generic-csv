@@ -199,6 +199,11 @@ public class AlnkInput implements TranslatorInput {
                 LOG.debug("FOUND SEPARATOR: " + listSeperator);
                 this.listSeparator = listSeperator;
                 break;
+            } else if (sample.startsWith("\"#\"")) {
+                String listSeperator = sample.substring(3, 4);
+                LOG.debug("FOUND SEPARATOR: " + listSeperator);
+                this.listSeparator = listSeperator;
+                break;
             }
         }
         in.reset();
