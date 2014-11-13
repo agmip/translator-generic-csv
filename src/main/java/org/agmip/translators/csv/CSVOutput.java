@@ -93,7 +93,15 @@ public class CSVOutput implements TranslatorOutput {
                 nextLine = new ArrayList();
                 nextLine.add("");
                 for (String key : headerKeys) {
-                    nextLine.add(getValueOr(dailyData, key, ""));
+                    if (key.equals("w_date")) {
+                        String date = Functions.formatAgmipDateString(getValueOr(dailyData, key, ""), "yyyy-MM-dd");
+                        if (date == null) {
+                            date = "";
+                        }
+                        nextLine.add(date);
+                    } else {
+                        nextLine.add(getValueOr(dailyData, key, ""));
+                    }
                 }
                 writer.writeNext(nextLine.toArray(new String[0]));
             }
