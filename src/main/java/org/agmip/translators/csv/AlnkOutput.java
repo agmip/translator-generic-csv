@@ -42,7 +42,7 @@ public class AlnkOutput implements TranslatorOutput {
 //        for (HashMap<String, Object> wthData : wthArr) {
         alnkFile = getOutputFile(outputDirectory);
         BufferedWriter bw = new BufferedWriter(new FileWriter(alnkFile));
-        CSVWriter writer = new CSVWriter(bw, ',');
+        CSVWriter writer = new CSVWriter(bw, ',', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER);
         ArrayList<String> headerKeys = new ArrayList();
         ArrayList<String> nextLine;
 
@@ -50,7 +50,7 @@ public class AlnkOutput implements TranslatorOutput {
         nextLine = new ArrayList();
         nextLine.add("!");
         if (!isNoExp) {
-            nextLine.add("Name of experiment, field test or survey");
+            nextLine.add("\"Name of experiment, field test or survey\"");
         } else {
             nextLine.add("Weather station ID");
             nextLine.add("Soil ID");
@@ -113,7 +113,7 @@ public class AlnkOutput implements TranslatorOutput {
                     exname = exname.replaceAll("_\\d+$", "");
                 }
                 if (!finExnames.contains(exname)) {
-                    nextLine.add(exname);
+                    nextLine.add("\"" + exname + "\"");
                     finExnames.add(exname);
                 } else {
                     continue;
