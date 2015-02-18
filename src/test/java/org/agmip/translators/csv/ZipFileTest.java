@@ -20,11 +20,13 @@ public class ZipFileTest {
     private static Logger LOG = LoggerFactory.getLogger(ZipFileTest.class);
     private CSVInput importer;
     private URL zipTest;
+    private URL agtrTest;
 
     @Before
     public void setup() {
         importer = new CSVInput();
         zipTest      = this.getClass().getResource("/test.zip");
+        agtrTest      = this.getClass().getResource("/MetadataDataTrial_49232.zip");
     }
 
     @Test
@@ -36,5 +38,16 @@ public class ZipFileTest {
             ex.printStackTrace();
         }
         LOG.info("Zip File Test results: "+result.toString());
+    }
+
+    @Test
+    public void agtrailsFileTest() {
+        Map result = new LinkedHashMap();
+        try {
+            result = importer.readFile(agtrTest.getPath());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        LOG.info("AgTrails File Test results: "+result.toString());
     }
 }
