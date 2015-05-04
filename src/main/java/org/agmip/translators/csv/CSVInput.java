@@ -247,14 +247,14 @@ public class CSVInput implements TranslatorInput {
             LOG.debug("Leaving event loop");
         } else if (header.getSkippedColumns().isEmpty()) {
             for (int i = 0; i < l; i++) {
-                if (!data[i + 1].equals("")) {
+                if (!data[i + 1].trim().equals("")) {
                     insertValue(dataIndex, headers.get(i), data[i + 1], header);
                 }
             }
         } else {
             ArrayList<Integer> skipped = header.getSkippedColumns();
             for (int i = 0; i < l; i++) {
-                if (!data[i + 1].equals("")) {
+                if (!data[i + 1].trim().equals("")) {
                     if (!skipped.contains(i + 1)) {
                         insertValue(dataIndex, headers.get(i), data[i + 1], header);
                     }
