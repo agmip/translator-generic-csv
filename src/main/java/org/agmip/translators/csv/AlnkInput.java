@@ -160,9 +160,12 @@ public class AlnkInput implements TranslatorInput {
         }
     }
     
-    private void saveDomeID(HashMap m, String key, String value) {
+    private void saveDomeID(HashMap<String, String> m, String key, String value) {
         if (m.containsKey(key)) {
-            m.put(key, m.get(key) + "|" + value);
+            String link = m.get(key);
+            if (!link.contains(value)) {
+                m.put(key, link + "|" + value);
+            }
         } else {
             m.put(key, value);
         }

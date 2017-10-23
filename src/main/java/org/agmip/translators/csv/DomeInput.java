@@ -99,7 +99,7 @@ public class DomeInput implements TranslatorInput {
                         lineMap.put("args", args.substring(0, chopIndex));
                     } else {
                         // Variable or static
-                        lineMap.put("args", nextLine[3].toUpperCase());
+                        lineMap.put("args", nextLine[3]);
                     }
 
                     lineMap.put("cmd", cmd);
