@@ -21,7 +21,7 @@ public class TranslationTest
 {
     private static Logger LOG = LoggerFactory.getLogger(TranslationTest.class);
     private CSVInput importer;
-    private URL simpleTest, ccTest, refTest, multiTest, asteriskTest, scdelimTest;
+    private URL simpleTest, ccTest, refTest, multiTest, asteriskTest, scdelimTest, multiTableTest;
     private URL zipTest;
 
     @Before
@@ -34,6 +34,7 @@ public class TranslationTest
         asteriskTest  = this.getClass().getResource("/one_ex_per.csv");
         zipTest      = this.getClass().getResource("/test.zip");
         scdelimTest = this.getClass().getResource("/sc_delim.csv");
+        multiTableTest = this.getClass().getResource("/Soil_Profile.csv");
     }
 
     @Test
@@ -112,5 +113,16 @@ public class TranslationTest
             ex.printStackTrace();
         }
         LOG.info("Semicolon Delimiter test results: "+result.toString());
+    }
+    
+    @Test
+    public void multiTableTest() {
+        Map result = new LinkedHashMap();
+        try {
+            result = importer.readFile(multiTableTest.getPath());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        LOG.info("Multi-Table test results: "+result.toString());
     }
 }

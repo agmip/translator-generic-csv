@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.agmip.ace.AcePathfinder;
 import org.agmip.ace.util.AcePathfinderUtil;
 import org.agmip.core.types.TranslatorInput;
+import org.agmip.util.MapUtil;
 
 /**
  * This class converts CSV formatted files into the AgMIP ACE JSON format. It
@@ -64,6 +65,7 @@ public class CSVInput implements TranslatorInput {
         private final ArrayList<Integer> skippedColumns;
         private final String defPath;
         private final AcePathfinderUtil.PathType defPathType;
+        private final HashMap<String, Integer> subListKeyMap;
 
         public CSVHeader(ArrayList<String> headers, ArrayList<Integer> sc) {
             this(headers, sc, null, AcePathfinderUtil.PathType.UNKNOWN);
@@ -74,6 +76,32 @@ public class CSVInput implements TranslatorInput {
             this.skippedColumns = sc;
             this.defPath = defPath;
             this.defPathType = defPathType;
+            this.subListKeyMap = new HashMap();
+            if (defPath != null && defPath.contains("@")) {
+                if (defPath.equals("soil@soilLayer")) {
+//                    if (headers.contains("SLLT")) {
+//                        subListKeyMap.put("sllt", headers.indexOf("SLLT") + 1);
+//                    }
+                    if (headers.contains("SLLB")) {
+                        subListKeyMap.put("sllb", headers.indexOf("SLLB") + 1);
+                    }
+                } else if (defPath.equals("weather@dailyWeather")) {
+                    if (headers.contains("W_DATE")) {
+                        subListKeyMap.put("w_date", headers.indexOf("W_DATE") + 1);
+                    }
+                } else if (defPath.equals("initial_conditions@soilLayer")) {
+//                    if (headers.contains("ICTL")) {
+//                        subListKeyMap.put("ictl", headers.indexOf("ICTL") + 1);
+//                    }
+                    if (headers.contains("ICBL")) {
+                        subListKeyMap.put("icbl", headers.indexOf("ICBL") + 1);
+                    }
+                } else if (defPath.equals("observed@timeSeries")) {
+                    if (headers.contains("DATE")) {
+                        subListKeyMap.put("date", headers.indexOf("DATE") + 1);
+                    }
+                }
+            }
         }
 
         public CSVHeader() {
@@ -81,6 +109,7 @@ public class CSVInput implements TranslatorInput {
             this.skippedColumns = new ArrayList<Integer>();
             this.defPath = null;
             this.defPathType = AcePathfinderUtil.PathType.UNKNOWN;
+            this.subListKeyMap = new HashMap();
         }
 
         public ArrayList<String> getHeaders() {
@@ -97,6 +126,18 @@ public class CSVInput implements TranslatorInput {
 
         public AcePathfinderUtil.PathType getDefPathType() {
             return defPathType;
+        }
+        
+        public ArrayList<String> getSubListKeys() {
+            return new ArrayList(subListKeyMap.keySet());
+        }
+        
+        public HashMap<String, String> getSubListKeys(String[] data) {
+            HashMap<String, String> keys = new HashMap();
+            for (String key : subListKeyMap.keySet()) {
+                keys.put(key, data[subListKeyMap.get(key)]);
+            }
+            return keys;
         }
     }
 
@@ -122,16 +163,16 @@ public class CSVInput implements TranslatorInput {
         } else if (fileName.toUpperCase().endsWith("ZIP")) {
             //Handle a ZipInputStream instead
             LOG.debug("Launching zip file handler");
-            ZipFile zf = new ZipFile(fileName);
-            Enumeration<? extends ZipEntry> e = zf.entries();
-            while (e.hasMoreElements()) {
-                ZipEntry ze = (ZipEntry) e.nextElement();
-                LOG.debug("Entering file: " + ze);
-                if (ze.getName().toLowerCase().endsWith(".csv")) {
-                    readCSV(zf.getInputStream(ze));
+            try (ZipFile zf = new ZipFile(fileName)) {
+                Enumeration<? extends ZipEntry> e = zf.entries();
+                while (e.hasMoreElements()) {
+                    ZipEntry ze = (ZipEntry) e.nextElement();
+                    LOG.debug("Entering file: " + ze);
+                    if (ze.getName().toLowerCase().endsWith(".csv")) {
+                        readCSV(zf.getInputStream(ze));
+                    }
                 }
             }
-            zf.close();
         }
         return cleanUpFinalMap();
     }
@@ -223,6 +264,7 @@ public class CSVInput implements TranslatorInput {
         int l = headers.size();
         String dataIndex;
         dataIndex = UUID.randomUUID().toString();
+        HashMap<String, String> subListKeys = header.getSubListKeys(data);
 
         if (!isComplete) {
             if (idMap.containsKey(data[0])) {
@@ -232,15 +274,40 @@ public class CSVInput implements TranslatorInput {
             }
         }
         if (data[1].toLowerCase().equals("event")) {
-            for (int i = 3; i < data.length; i++) {
-                String var = data[i].toLowerCase();
-                i++;
-                if (i < data.length) {
-                    String val = data[i];
-                    LOG.debug("Trimmed var: " + var.trim() + " and length: " + var.trim().length());
-                    if (var.trim().length() != 0 && val.trim().length() != 0) {
-                        LOG.debug("INSERTING! Var: " + var + " Val: " + val);
-                        insertValue(dataIndex, var, val, header);
+            if (header.getDefPath() != null && !"".equals(header.getDefPath())) {
+                for (int i = 3; i < data.length; i++) {
+                    String var = data[i].toLowerCase();
+                    i++;
+                    if (i < data.length) {
+                        String val = data[i];
+                        LOG.debug("Trimmed var: " + var.trim() + " and length: " + var.trim().length());
+                        if (var.trim().length() != 0 && val.trim().length() != 0) {
+                            LOG.debug("INSERTING! Var: " + var + " Val: " + val);
+                            insertValue(dataIndex, var, val, header, subListKeys);
+                        }
+                    }
+                }
+            } else {
+                HashMap event = insertUnknownEvent(dataIndex, data[2]);
+                for (int i = 3; i < data.length; i++) {
+                    String var = data[i].toLowerCase();
+                    i++;
+                    if (i < data.length) {
+                        String value = data[i];
+                        LOG.debug("Trimmed var: " + var.trim() + " and length: " + var.trim().length());
+                        if (pathfinder.isDate(var)) {
+                            LOG.debug("Converting date from: " + value);
+                            value = value.replace("/", "-");
+                            DateFormat f = new SimpleDateFormat("yyyymmdd");
+                            Date d = new SimpleDateFormat("yyyy-mm-dd").parse(value);
+                            value = f.format(d);
+                            LOG.debug("Converting date to: " + value);
+
+                        }
+                        if (var.trim().length() != 0 && value.trim().length() != 0) {
+                            LOG.debug("INSERTING! Var: " + var + " Val: " + value);
+                            event.put(var, value);
+                        }
                     }
                 }
             }
@@ -248,7 +315,7 @@ public class CSVInput implements TranslatorInput {
         } else if (header.getSkippedColumns().isEmpty()) {
             for (int i = 0; i < l; i++) {
                 if (!data[i + 1].trim().equals("")) {
-                    insertValue(dataIndex, headers.get(i), data[i + 1], header);
+                    insertValue(dataIndex, headers.get(i), data[i + 1], header, subListKeys);
                 }
             }
         } else {
@@ -256,14 +323,24 @@ public class CSVInput implements TranslatorInput {
             for (int i = 0; i < l; i++) {
                 if (!data[i + 1].trim().equals("")) {
                     if (!skipped.contains(i + 1)) {
-                        insertValue(dataIndex, headers.get(i), data[i + 1], header);
+                        insertValue(dataIndex, headers.get(i), data[i + 1], header, subListKeys);
                     }
                 }
             }
         }
     }
+    
+    protected HashMap<String, String> insertUnknownEvent(String index, String eventType) {
+        insertIndex(expMap, index, true);
+        HashMap<String, Object> currentMap = expMap.get(index);
+        ArrayList<HashMap<String, String>> events = MapUtil.getBucket(currentMap, "management").getDataList();
+        HashMap<String, String> event = new HashMap();
+        event.put("event", eventType);
+        events.add(event);
+        return event;
+    }
 
-    protected void insertValue(String index, String variable, String value, CSVHeader header) throws Exception {
+    protected void insertValue(String index, String variable, String value, CSVHeader header, HashMap<String, String> subListKeys) throws Exception {
         try {
             String var = variable.toLowerCase();
             HashMap<String, HashMap<String, Object>> topMap = null;
@@ -327,6 +404,32 @@ public class CSVInput implements TranslatorInput {
             }
             insertIndex(topMap, index, isExperimentMap);
             HashMap<String, Object> currentMap = topMap.get(index);
+            path = AcePathfinderUtil.getInstance().getPath(var);
+            if (!subListKeys.isEmpty() && (header.getDefPath().equals(path) || path == null || path.isEmpty())) {
+                path = header.getDefPath();
+                ArrayList<HashMap<String, String>> subList;
+                String[] paths = path.split("@");
+                HashMap<String, Object> tmp = (HashMap<String, Object>) currentMap.get(paths[0]);
+                if (tmp != null) {
+                    subList = (ArrayList<HashMap<String, String>>) tmp.get(paths[1]);
+                    if (subList == null) {
+                        subList = new ArrayList();
+                    }
+                    for (HashMap<String, String> record : subList) {
+                        boolean found = true;
+                        for (String key : subListKeys.keySet()) {
+                            if (!subListKeys.get(key).equals(record.get(key))) {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found) {
+                            record.put(var, value);
+                            return;
+                        }
+                    }
+                }
+            }
             AcePathfinderUtil.insertValue(currentMap, var, value, path, true);
         } catch (Exception ex) {
             throw new Exception(ex);
@@ -402,7 +505,7 @@ public class CSVInput implements TranslatorInput {
         in.mark(7168);
         String sample;
         while ((sample = in.readLine()) != null) {
-            if (sample.startsWith("#")) {
+            if (sample.startsWith("#") || sample.startsWith("%") || sample.startsWith("*")) {
                 String listSeperator = sample.substring(1, 2);
                 LOG.debug("FOUND SEPARATOR: " + listSeperator);
                 this.listSeparator = listSeperator;
