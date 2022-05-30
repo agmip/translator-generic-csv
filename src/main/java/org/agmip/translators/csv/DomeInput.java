@@ -62,7 +62,7 @@ public class DomeInput implements TranslatorInput {
                 String cmd = nextLine[1].trim().toUpperCase();
                 if (cmd.equals("INFO")) {
                     info.put(nextLine[2].toLowerCase(), nextLine[3].toUpperCase());
-                } else if ((cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("CREATE"))) {
+                } else if ((cmd.equals("FILL") || cmd.equals("REPLACE") || cmd.equals("REPLACE_FIELD_ONLY") || cmd.equals("REPLACE_STRATEGY_ONLY") || cmd.equals("CREATE"))) {
                     StringBuilder args = new StringBuilder();
                     if (nextLine[3].endsWith("()")) {
                         log.debug("Found fun {}", nextLine[3].toUpperCase());
@@ -99,7 +99,7 @@ public class DomeInput implements TranslatorInput {
                         lineMap.put("args", args.substring(0, chopIndex));
                     } else {
                         // Variable or static
-                        lineMap.put("args", nextLine[3].toUpperCase());
+                        lineMap.put("args", nextLine[3]);
                     }
 
                     lineMap.put("cmd", cmd);
